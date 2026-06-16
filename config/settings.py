@@ -73,6 +73,15 @@ TEMPLATES = [
     },
 ]
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer", # This specifies that we want to use Redis as the backing store for our channel layer, which is necessary for handling WebSocket connections in a scalable way.
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = "config.asgi.application" # important for Channels server
 
