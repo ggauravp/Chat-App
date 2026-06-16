@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = "accounts.User"
 
 # Application definition
 
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'chat',
     'accounts',
     'friends',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
