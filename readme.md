@@ -55,15 +55,15 @@ To prevent this, Django uses a CSRF token.
 ```<form method="POST">
     {% csrf_token %}
 ```
-- Django does two things:
+Django does two things:
 1. Sends a CSRF cookie to the browser
 2. Adds a hidden CSRF token inside the form
 
-- How it works
+How it works
 * When you submit the form:
 1. The browser sends the CSRF cookie
 2. The form sends the hidden CSRF token
  
-- Django checks both values.
+Django checks both values.
 * If they match → request is allowed
 * If not → request is blocked (403 error)
