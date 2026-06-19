@@ -1,3 +1,40 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from chat.models import Conversation
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-# Create your views here.
+@ensure_csrf_cookie
+def signup_view(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+
+        if User.objects.filter(username=username).exists():
+            return render(request, "accounts/signup.html", {"error": "User already exists"})
+
+        user = User.objects.create_user(username=username, password=password)
+        login(request, user)
+        conversation = Conversation.objects.create()
+        return redirect(f"/chat/{conversation.id}/")
+
+    return render(request, "accounts/signup.html")
+
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("/chat/1/")
+        else:
+            return render(request, "accounts/login.html", {"error": "Invalid credentials"})
+
+    return render(request, "accounts/login.html")
+
+def logout_view(request):
+    logout(request)
+    return redirect("/accounts/login/")

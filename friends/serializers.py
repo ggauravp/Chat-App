@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import FriendRequest, Friendship
-from accounts.models import User
-
+from django.contrib.auth.models import User
 
 class FriendRequestSerializer(serializers.ModelSerializer):
     sender = serializers.StringRelatedField(read_only=True)

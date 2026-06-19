@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Chat Test</title>
+    <title>Chat</title>
 </head>
 <body>
 
-<h2>WebSocket Test</h2>
+<h2>Chat Room {{ conversation_id }}</h2>
 
 <input type="text" id="messageInput">
 <button onclick="sendMessage()">Send</button>
@@ -14,33 +14,61 @@
 
 <script>
     const conversationId = "{{ conversation_id }}";
+    const messagesContainer = document.getElementById("messages");
 
+    // WebSocket connection
     const socket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/' + conversationId + '/'
+        "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
     );
-    socket.onopen = function() {
+
+    socket.onopen = function () {
         console.log("Connected");
     };
 
-    socket.onmessage = function(event) {
+    socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
 
         const li = document.createElement("li");
-        li.textContent = `${data.sender}: ${data.message}`;
+        li.textContent = `User ${data.sender_id}: ${data.message}`;
 
-        document.getElementById("messages").appendChild(li);
+        messagesContainer.appendChild(li);
     };
 
     function sendMessage() {
         const input = document.getElementById("messageInput");
 
+        if (!input.value) return;
+
         socket.send(JSON.stringify({
-            sender: "Gaurav",
             message: input.value
         }));
 
         input.value = "";
     }
+
+    socket.onclose = function () {
+        console.log("WebSocket closed");
+    };
+
+    socket.onerror = function (error) {
+        console.log("WebSocket error", error);
+    };
+
+    // Load old messages from Django
+    const oldMessages = [
+        {% for msg in messages %}
+        {
+            sender_id: "{{ msg.sender.id }}",
+            message: "{{ msg.content }}"
+        },
+        {% endfor %}
+    ];
+
+    oldMessages.forEach(msg => {
+        const li = document.createElement("li");
+        li.textContent = `User ${msg.sender_id}: ${msg.message}`;
+        messagesContainer.appendChild(li);
+    });
 </script>
 
 </body>

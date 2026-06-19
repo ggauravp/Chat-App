@@ -1,10 +1,11 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
+from django.db.models import Q
 from .models import FriendRequest, Friendship
-from accounts.models import User
+from django.contrib.auth.models import User
 from .serializers import FriendRequestSerializer
+from chat.models import Conversation
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -30,9 +31,15 @@ def send_friend_request(request):
 @permission_classes([IsAuthenticated])
 def accept_friend_request(request, request_id):
     try:
-        fr = FriendRequest.objects.get(id=request_id, receiver=request.user)
+        fr = FriendRequest.objects.get(
+            id=request_id,
+            receiver=request.user
+        )
     except FriendRequest.DoesNotExist:
-        return Response({"error": "Request not found"}, status=404)
+        return Response(
+            {"error": "Request not found"},
+            status=404
+        )
 
     fr.status = "accepted"
     fr.save()
@@ -42,7 +49,22 @@ def accept_friend_request(request, request_id):
         user2=fr.receiver
     )
 
-    return Response({"message": "Friend request accepted"})
+    existing = Conversation.objects.filter(
+        participants=fr.sender
+    ).filter(
+        participants=fr.receiver
+    ).first()
+
+    if not existing:
+        conversation = Conversation.objects.create()
+        conversation.participants.add(
+            fr.sender,
+            fr.receiver
+        )
+
+    return Response(
+        {"message": "Friend request accepted"}
+    )
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
