@@ -1,0 +1,13 @@
+<h2>Users</h2>
+
+<ul>
+    {% for user in users %}
+        <li>
+            {{ user.username }}
+
+            <a href="{% url 'start-chat' user.id %}">
+                Chat
+            </a>
+        </li>
+    {% endfor %}
+</ul>

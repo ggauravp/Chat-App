@@ -16,7 +16,7 @@ def signup_view(request):
         user = User.objects.create_user(username=username, password=password)
         login(request, user)
         conversation = Conversation.objects.create()
-        return redirect(f"/chat/{conversation.id}/")
+        return redirect("user-list")
 
     return render(request, "accounts/signup.html")
 
@@ -29,7 +29,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("/chat/1/")
+            return redirect("/chat/users/")
         else:
             return render(request, "accounts/login.html", {"error": "Invalid credentials"})
 
@@ -38,3 +38,5 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("/accounts/login/")
+
+
