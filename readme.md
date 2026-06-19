@@ -46,3 +46,24 @@ URL match → consumers.py
 Consumers is like view for HTTP where we handle the websocket requests.
 Here we make function to connect, disconnect, etc
 
+## CSRF (Cross Site Request Forgery)
+
+CSRF is an attack where a hacker tricks your browser into sending an unwanted POST request to a Django application without your permission.
+To prevent this, Django uses a CSRF token.
+
+- When you load a page containing a POST form:
+```<form method="POST">
+    {% csrf_token %}
+```
+- Django does two things:
+1. Sends a CSRF cookie to the browser
+2. Adds a hidden CSRF token inside the form
+
+- How it works
+* When you submit the form:
+1. The browser sends the CSRF cookie
+2. The form sends the hidden CSRF token
+ 
+- Django checks both values.
+* If they match → request is allowed
+* If not → request is blocked (403 error)
