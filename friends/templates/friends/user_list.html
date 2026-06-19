@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 15px;
+            background: #4CAF50;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 👇 NEW: logged in user bar */
+        .me-bar {
+            padding: 12px 15px;
+            background: #e8f5e9;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: 0.2s;
+        }
+
+        .user-item:hover {
+            background: #f0f0f0;
+        }
+
+        .username {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chat-btn {
+            text-decoration: none;
+            background: #4CAF50;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .chat-btn:hover {
+            background: #45a049;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        👥 Users
+    </div>
+
+    <!-- 👇 NEW: show current logged-in user -->
+    <div class="me-bar">
+        Logged in as: <b>{{ request.user.username }}</b>
+    </div>
+
+    <ul class="user-list">
+
+        {% for user in users %}
+            <li class="user-item">
+                <span class="username">{{ user.username }}</span>
+
+                <a class="chat-btn" href="{% url 'start-chat' user.id %}">
+                    Chat
+                </a>
+            </li>
+        {% empty %}
+            <div class="empty">
+                No users found
+            </div>
+        {% endfor %}
+
+    </ul>
+
+</div>
+
+</body>
+</html>

@@ -6,6 +6,48 @@ from .models import FriendRequest, Friendship
 from django.contrib.auth.models import User
 from .serializers import FriendRequestSerializer
 from chat.models import Conversation
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import get_user_model 
+from django.contrib.auth.decorators import login_required
+
+User = get_user_model()
+
+# 👇 USER LIST PAGE
+def user_list(request):
+    users = User.objects.exclude(id=request.user.id)
+
+    return render(
+        request,
+        "friends/user_list.html",
+        {"users": users}
+    )
+
+@login_required
+def chat_list(request):
+    conversations = Conversation.objects.filter(participants=request.user).order_by("-created_at")
+
+    return render(request, "friends/chat_list.html", {
+        "conversations": conversations,
+        "current_user" : request.user
+    })
+
+# 👇 START CHAT (CREATE OR GET CONVERSATION)
+def start_chat(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    # try to find existing conversation between 2 users
+    conversation = Conversation.objects.filter(
+        participants=request.user
+    ).filter(
+        participants=other_user
+    ).first()
+
+    # if not found → create new conversation
+    if not conversation:
+        conversation = Conversation.objects.create()
+        conversation.participants.add(request.user, other_user)
+
+    return redirect("chat-room-detail", conversation_id=conversation.id)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])

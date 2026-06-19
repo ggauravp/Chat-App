@@ -29,7 +29,7 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("/chat/users/")
+            return redirect("/friends/")
         else:
             return render(request, "accounts/login.html", {"error": "Invalid credentials"})
 

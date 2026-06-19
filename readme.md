@@ -46,6 +46,17 @@ URL match → consumers.py
 Consumers is like view for HTTP where we handle the websocket requests.
 Here we make function to connect, disconnect, etc
 
+## What is Django Channels?
+Django Channels is an extension of Django that adds support for:
+- WebSockets (real-time communication)
+- Background tasks
+- Long-lived connections
+Without Channels:
+* Django only handles HTTP (request/response)
+With Channels:
+* Django can handle real-time apps like chat, notifications, live updates
+
+
 ## CSRF (Cross Site Request Forgery)
 
 CSRF is an attack where a hacker tricks your browser into sending an unwanted POST request to a Django application without your permission.

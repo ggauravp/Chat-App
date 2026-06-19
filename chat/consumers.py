@@ -7,16 +7,16 @@ from .models import Conversation, Message
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
-    async def connect(self):
-        self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
-        self.room_group_name = f"chat_{self.conversation_id}"
+    async def connect(self): # This runs when user opens websocket
+        self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"] # This gets conversation_id from url
+        self.room_group_name = f"chat_{self.conversation_id}" # This Create Group name
 
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
+        await self.channel_layer.group_add(  # Adds a WebSocket connection into a group
+            self.room_group_name,  # first parameter group name
+            self.channel_name      # second parameter channel name which is automatically created by channels, it represents unique id for this specific websocket connection
         )
 
-        await self.accept()
+        await self.accept() # Now WebSocket is officially open.
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
@@ -45,6 +45,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "chat_message",
                 "message": saved_message.content,
                 "sender_id": saved_message.sender.id,
+                "sender_username": saved_message.sender.username,
             }
         )
 
@@ -52,6 +53,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             "message": event["message"],
             "sender_id": event["sender_id"],
+            "sender_username": event["sender_username"],
         }))
 
     @database_sync_to_async
