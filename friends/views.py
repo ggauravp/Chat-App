@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 
-# 👇 USER LIST PAGE
+#  USER LIST PAGE
 def user_list(request):
     users = User.objects.exclude(id=request.user.id)
 
@@ -31,7 +31,7 @@ def chat_list(request):
         "current_user" : request.user
     })
 
-# 👇 START CHAT (CREATE OR GET CONVERSATION)
+#  START CHAT (CREATE OR GET CONVERSATION)
 def start_chat(request, user_id):
     other_user = get_object_or_404(User, id=user_id)
 

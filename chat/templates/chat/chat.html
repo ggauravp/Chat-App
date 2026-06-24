@@ -114,19 +114,31 @@
 </div>
 
 <script>
+    // Get conversation id passed from Django template
     const conversationId = "{{ conversation_id }}";
+
+    // Logged-in user's id
     const userId = "{{ request.user.id }}";
+
+    // Logged-in user's username
     const userName = "{{ request.user.username }}";
 
+    // Message container where all chat messages will be displayed
     const messagesContainer = document.getElementById("messages");
 
+    // Create a WebSocket connection request to Django Channels.
+    // This request is matched against websocket_urlpatterns and routed to ChatConsumer.
     const socket = new WebSocket(
         "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
     );
 
+    // Runs whenever a new message is received from the Consumer
     socket.onmessage = function (event) {
+
+        // Convert JSON string received from backend into JS object
         const data = JSON.parse(event.data);
 
+        // Add the received message to the chat UI
         appendMessage(
             data.sender_id,
             data.sender_username,
@@ -135,23 +147,31 @@
         );
     };
 
+    // Called when Send button is clicked
     function sendMessage() {
+
+        // Get input field
         const input = document.getElementById("messageInput");
 
+        // Prevent sending empty messages
         if (!input.value.trim()) return;
 
+        // Send message through WebSocket to Django Consumer
         socket.send(JSON.stringify({
             message: input.value
         }));
 
+        // Clear input field after sending
         input.value = "";
     }
 
+    // Runs when WebSocket connection closes
     socket.onclose = () => console.log("WebSocket closed");
 
-    // OLD MESSAGES
+    // Load old messages that Django sent while rendering page
     const oldMessages = JSON.parse(`{{ messages_json|escapejs }}`);
 
+    // Display all previous messages in chat box
     oldMessages.forEach(msg => {
         appendMessage(
             msg.sender_id,
@@ -161,31 +181,43 @@
         );
     });
 
+    // Creates a message bubble and adds it to chat UI
     function appendMessage(senderId, senderName, message, time) {
+
+        // Create new div element for message
         const div = document.createElement("div");
 
+        // Check whether this message belongs to current user
         const isMe = parseInt(senderId) === parseInt(userId);
 
+        // Add common message class
         div.classList.add("msg");
+
+        // Add sent/received class based on sender
         div.classList.add(isMe ? "sent" : "received");
 
+        // Create message bubble HTML
         div.innerHTML = `
             <div><b>${isMe ? "You" : senderName}</b></div>
             <div>${message}</div>
             <div class="time">${time}</div>
         `;
 
+        // Add message to chat container
         messagesContainer.appendChild(div);
 
-        // AUTO SCROLL
+        // Automatically scroll to latest message
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
+    // Generate current time for live messages
+    // Used as fallback if timestamp isn't sent from backend
     function getTime() {
         const now = new Date();
-        return now.getHours() + ":" + String(now.getMinutes()).padStart(2, "0");
+
+        return now.getHours() + ":" +
+               String(now.getMinutes()).padStart(2, "0");
     }
 </script>
-
 </body>
 </html>
