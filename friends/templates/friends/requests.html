@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Friend Requests</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8fafc; color:#111827; }
+        .container { max-width:900px; margin:32px auto; padding:20px; }
+        .card { background:white; border:1px solid #e6e9ef; padding:12px; border-radius:8px; }
+        .row { display:flex; justify-content:space-between; align-items:center; }
+        .btn { padding:8px 12px; border-radius:6px; cursor:pointer; }
+        .btn-accept { background:#16a34a; color:white; }
+        .btn-reject { background:#dc2626; color:white; }
+        .muted { color:#6b7280; font-size:0.9rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Friend Requests</h1>
+
+    <h2>Incoming</h2>
+    {% if incoming %}
+        <div style="display:grid;gap:12px">
+        {% for req in incoming %}
+            <div class="card row">
+                <div>
+                    <div style="font-weight:600">{{ req.sender.username }}</div>
+                    <div class="muted">Sent {{ req.created_at|date:"M j, Y H:i" }}</div>
+                </div>
+                <div>
+                    <button data-id="{{ req.id }}" class="btn btn-accept accept-btn">Accept</button>
+                    <button data-id="{{ req.id }}" class="btn btn-reject reject-btn">Reject</button>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">No incoming requests.</p>
+    {% endif %}
+
+    <h2 style="margin-top:24px">Outgoing</h2>
+    {% if outgoing %}
+        <div style="display:grid;gap:12px">
+        {% for req in outgoing %}
+            <div class="card row">
+                <div>
+                    <div style="font-weight:600">{{ req.receiver.username }}</div>
+                    <div class="muted">Status: {{ req.status }} — Sent {{ req.created_at|date:"M j, Y H:i" }}</div>
+                </div>
+                <div>
+                    {% if req.status == "pending" %}
+                        <button data-id="{{ req.id }}" class="btn btn-reject cancel-btn">Cancel</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">No outgoing requests.</p>
+    {% endif %}
+
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function postJSON(url, data) {
+    const csrftoken = getCookie('csrftoken');
+    const res = await fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify(data),
+    });
+    return res;
+}
+
+document.querySelectorAll('.accept-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        await postJSON('/friends/accept/' + id + '/', {});
+        location.reload();
+    });
+});
+
+document.querySelectorAll('.reject-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        await postJSON('/friends/reject/' + id + '/', {});
+        location.reload();
+    });
+});
+
+document.querySelectorAll('.cancel-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        await postJSON('/friends/reject/' + id + '/', {});
+        location.reload();
+    });
+});
+</script>
+</body>
+</html>

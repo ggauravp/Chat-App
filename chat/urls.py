@@ -4,4 +4,4 @@ from .views import (
 )
 
 urlpatterns = [
-    path("<int:conversation_id>/", chat_room, name="chat-room"),]
+    path("<int:conversation_id>/", chat_room, name="chat-room-detail"),]

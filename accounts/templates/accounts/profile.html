@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Echo Chat | Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e1e3e4;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c7c4d8;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .soft-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#dad7ff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "surface-container-low": "#f3f4f5",
+                    "on-primary-fixed": "#0f0069",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed": "#e2dfff",
+                    "secondary-fixed": "#e1e0ff",
+                    "surface-tint": "#4d44e3",
+                    "surface-dim": "#d9dadb",
+                    "surface-container-highest": "#e1e3e4",
+                    "surface": "#f8f9fa",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#fffbff",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#464555",
+                    "on-tertiary-fixed": "#351000",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "inverse-primary": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container": "#edeeef",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#7e3000",
+                    "on-surface": "#191c1d",
+                    "tertiary-container": "#a44100",
+                    "on-tertiary-container": "#ffd2be",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#07006c",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "on-primary": "#ffffff",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "on-background": "#191c1d",
+                    "on-secondary-fixed-variant": "#2f2ebe",
+                    "secondary-container": "#6063ee",
+                    "primary": "#3525cd",
+                    "tertiary-fixed": "#ffdbcc",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "secondary": "#4648d4",
+                    "surface-container-high": "#e7e8e9",
+                    "outline": "#777587",
+                    "surface-variant": "#e1e3e4",
+                    "outline-variant": "#c7c4d8",
+                    "inverse-surface": "#2e3132",
+                    "primary-container": "#4f46e5",
+                    "secondary-fixed-dim": "#c0c1ff",
+                    "surface-bright": "#f8f9fa"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "container-max": "1440px",
+                    "base": "4px",
+                    "lg": "24px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Geist"],
+                    "body-md": ["Geist"],
+                    "display": ["Geist"],
+                    "body-lg": ["Geist"],
+                    "headline-lg": ["Geist"],
+                    "label-md": ["Geist"],
+                    "label-sm": ["Geist"]
+            },
+            "fontSize": {
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline flat no shadows docked full-width top-0 z-50">
+<div class="flex justify-between items-center px-lg py-sm w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-xl">
+<span class="font-headline-lg text-headline-lg text-primary dark:text-inverse-primary tracking-tight">Echo Chat</span>
+<nav class="hidden md:flex gap-md items-center">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors font-body-md text-body-md" href="#">Settings</a>
+<a class="relative text-on-surface-variant hover:text-primary transition-colors font-body-md text-body-md" href="{% url 'requests' %}">
+    Requests
+    {% if pending_count and pending_count > 0 %}
+    <span class="absolute -top-2 -right-3 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full">{{ pending_count }}</span>
+    {% endif %}
+</a>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all w-[240px] text-body-md" placeholder="Search conversations..." type="text"/>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a young male creative with short dark hair, wearing a clean white t-shirt. The lighting is soft and directional, typical of a high-end light-mode UI design. The background is a solid, neutral gray that complements a modern minimalist aesthetic. His expression is friendly and approachable, reflecting a reliable team-focused persona." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD4iMAs6EIYSEGS_-Gr_n7f5G8TZBd0i5xakZs15MBoawiQlZJz8fLGn4huOiij44cdPmyUThVYkyMWVmDwgXbj6QtKET2CzB7EoF0fFP4wFWt5XiDd8y-TxocXUPi36lEfKVs8h6tTHsrLsgSjrrF4SuWk0lIdz-dwL8StOMvL4GUnpZtAAbUTKCgFFcIi93f1BTS5CMGP6txFKILg6nX4py-F1ZN7DEYwpgVPwHlKPOTV4qdKZGvzg"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="flex min-h-[calc(100vh-64px)]">
+<!-- SideNavBar Integration -->
+<aside class="bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant dark:border-outline fixed h-full left-0 w-[320px] hidden lg:flex flex-col py-lg transition-all duration-200 ease-in-out">
+<!-- User Profile Section -->
+<div class="px-lg pb-lg mb-lg border-b border-outline-variant/30">
+<div class="flex items-center gap-md mb-md">
+<div class="relative">
+<div class="w-14 h-14 rounded-xl overflow-hidden border-2 border-white shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A high-quality close-up profile picture of a young professional man named Alex Rivers. He has a warm smile, styled hair, and is wearing a modern casual denim shirt. The environment is a bright, airy office with lush green plants blurred in the background. The overall style is crisp and modern, featuring clean lines and high key lighting to match a productivity-focused dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjtwN9mxROGW3uHm74meD9Rdhkh7bEJXn0XRCf1EpSCVl14satcnZZnMo4ZgaKH22j3dHja4spP1OzL96_ori-ntjJXDTusc7LYr-kUyyZpzQQ52VR2uhKkCbIobALfDzZ-7BH2Pbx5yXcpJdw8PsRk6l4dLI5kpd17newOdfswrChXhMjfWMZzIcuxIzA6prUoLnFfQkDnEACMDLWziRRglN1Q1rsU7KjIxQta4g2JM3EOT2qRv2g1Q"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface leading-tight">{{ user.username }}</h2>
+<span class="font-label-md text-label-md text-on-surface-variant">Online</span>
+</div>
+</div>
+<button class="w-full py-2.5 bg-slate-900 text-white rounded-lg font-label-md text-label-md hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    New Chat
+                </button>
+</div>
+<!-- Friends List Section -->
+<div class="flex-1 overflow-y-auto px-lg">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant opacity-70">Friends</h3>
+<span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px] font-bold">{{ friends|length }}</span>
+</div>
+<div class="mb-md relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-white/50 border border-outline-variant/50 rounded-lg text-body-md focus:outline-none focus:border-primary" placeholder="Search friends..." type="text"/>
+</div>
+<div class="space-y-1">
+{% if friends %}
+    {% for friend in friends %}
+    <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-highest transition-all text-on-surface-variant group">
+        <div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/20">
+            <img class="w-full h-full object-cover" src="https://ui-avatars.com/api/?name={{ friend.user.username }}&background=7C3AED&color=ffffff" alt="{{ friend.user.username }}" />
+        </div>
+        <div class="flex-1">
+            <span class="font-body-md font-medium group-hover:text-primary transition-colors">{{ friend.user.username }}</span>
+            <p class="text-label-md opacity-70">Chat since {{ friend.conversation.created_at|date:"M j" }}</p>
+        </div>
+        <a href="{% url 'chat-room-detail' friend.conversation.id %}" class="px-3 py-2 bg-slate-900 text-white rounded-lg text-label-sm font-semibold hover:bg-slate-700 transition-colors">Chat</a>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="rounded-xl border border-outline-variant p-4 bg-surface-container-low text-on-surface-variant">
+        No chats yet. Start a conversation from Discover.
+    </div>
+{% endif %}
+</div>
+</div>
+<!-- SideNav Footer -->
+<div class="px-lg pt-lg mt-auto border-t border-outline-variant/30">
+<nav class="space-y-1">
+<a class="flex items-center gap-3 p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="text-label-md font-medium">Help Center</span>
+</a>
+<a class="flex items-center gap-3 p-2 rounded-lg text-error hover:bg-error-container/20 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-label-md font-medium">Logout</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-[320px] bg-surface p-xl">
+<div class="max-w-6xl mx-auto">
+<header class="mb-xl flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-display text-display text-on-surface mb-2">Discover New People</h1>
+<p class="text-body-lg text-on-surface-variant max-w-2xl">Expand your network and connect with creators, developers, and designers from the Echo Chat ecosystem.</p>
+</div>
+    <div class="flex items-center gap-sm bg-slate-50 p-1 rounded-xl border border-slate-200">
+<button class="px-4 py-2 bg-slate-900 text-white rounded-lg text-label-md font-semibold">Recommended</button>
+<button class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-label-md font-semibold transition-colors">Nearby</button>
+</div>
+</header>
+<!-- Search & Filters -->
+<div class="mb-xl grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="md:col-span-2 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">person_search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-slate-400 transition-all text-body-md shadow-sm" placeholder="Search by name, profession or interest..." type="text"/>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">tune</span>
+<select class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-300 focus:border-slate-400 appearance-none transition-all text-body-md shadow-sm">
+<option>All Professions</option>
+<option>Designers</option>
+<option>Developers</option>
+<option>Product Managers</option>
+</select>
+</div>
+</div>
+<!-- User Discover Grid -->
+<div class="bento-grid">
+    {% for item in discover_users %}
+    <div class="soft-card rounded-2xl p-6 transition-all group hover:shadow-xl">
+        <div class="flex justify-between items-start mb-4">
+            <div class="w-16 h-16 rounded-2xl overflow-hidden shadow-sm">
+                <img class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" src="https://ui-avatars.com/api/?name={{ item.user.username }}&background=eff6ff&color=4f46e5" alt="{{ item.user.username }}" />
+            </div>
+            <span class="px-3 py-1 bg-slate-100 text-slate-700 text-[10px] font-semibold rounded-full">Member</span>
+        </div>
+        <h3 class="font-headline-md text-headline-md mb-1">{{ item.user.username }}</h3>
+        <p class="text-label-md text-on-surface-variant mb-4">Connect and chat with {{ item.user.username }} on Echo Chat.</p>
+        <div class="flex items-center gap-2 mb-6">
+            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] rounded">Echo Chat</span>
+            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] rounded">Active</span>
+        </div>
+        <button data-user-id="{{ item.user.id }}" class="send-request w-full inline-flex py-3 bg-slate-900 text-white rounded-lg font-label-md font-bold hover:bg-slate-700 transition-all items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">person_add</span>
+            Send Request
+        </button>
+    </div>
+    {% empty %}
+    <div class="col-span-full bg-white border border-outline-variant rounded-xl p-8 text-center">
+        <h3 class="font-headline-md text-headline-md mb-2">No other users found</h3>
+        <p class="text-body-md text-on-surface-variant">Register new users to discover more people.</p>
+    </div>
+    {% endfor %}
+</div>
+<!-- Footer / Pagination -->
+<div class="mt-xl flex items-center justify-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold">1</button></div></div></main></div></body></html>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function sendFriendRequest(userId, btn) {
+    const csrftoken = getCookie('csrftoken');
+    try {
+        const res = await fetch('/friends/send/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({ receiver_id: userId }),
+        });
+        if (res.ok) {
+            btn.disabled = true;
+            btn.innerText = 'Request Sent';
+        } else {
+            const data = await res.json();
+            alert(data.error || 'Could not send request');
+        }
+    } catch (err) {
+        alert('Network error');
+    }
+}
+
+document.querySelectorAll('.send-request').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const id = btn.getAttribute('data-user-id');
+        sendFriendRequest(id, btn);
+    });
+});
+</script>

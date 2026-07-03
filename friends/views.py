@@ -12,6 +12,18 @@ from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 
+@login_required
+def requests_view(request):
+    # incoming (received) pending requests
+    incoming = FriendRequest.objects.filter(receiver=request.user, status="pending").order_by("-created_at")
+    # outgoing (sent) pending requests
+    outgoing = FriendRequest.objects.filter(sender=request.user, status="pending").order_by("-created_at")
+
+    return render(request, "friends/requests.html", {
+        "incoming": incoming,
+        "outgoing": outgoing,
+    })
+
 #  USER LIST PAGE
 def user_list(request):
     users = User.objects.exclude(id=request.user.id)
