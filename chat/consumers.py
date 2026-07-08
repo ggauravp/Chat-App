@@ -137,6 +137,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             )
 
+        elif event_type == "call_accepted":
+
+            user = self.scope["user"]
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "call_accepted",
+                    "username": user.username,
+                }
+            )
+
+        elif event_type == "call_declined":
+        
+            user = self.scope["user"]
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "call_declined",
+                    "username": user.username,
+                }
+            )
+
+        elif event_type == "call_cancelled":
+        
+            user = self.scope["user"]
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "call_cancelled",
+                    "username": user.username,
+                }
+            )
+
     # Called automatically because
     # group_send() had "type": "chat_message"
     async def chat_message(self, event):
@@ -190,3 +226,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
             sender=user,
             content=content
         )
+
+    async def call_accepted(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "call_accepted",
+            "username": event["username"],
+        }))
+    
+    
+    async def call_declined(self, event):
+    
+        await self.send(text_data=json.dumps({
+            "type": "call_declined",
+            "username": event["username"],
+        }))
+    
+    
+    async def call_cancelled(self, event):
+    
+        await self.send(text_data=json.dumps({
+            "type": "call_cancelled",
+            "username": event["username"],
+        }))
+
