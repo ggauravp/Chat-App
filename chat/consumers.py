@@ -46,57 +46,106 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Runs whenever JavaScript sends data using socket.send()
     async def receive(self, text_data):
+        print("Received data:", text_data)
 
         # Convert incoming JSON string into Python dictionary
         data = json.loads(text_data)
 
-        # Extract message text
-        message = data.get("message")
+        # Get event type
+        event_type = data.get("type")
 
-        # Get logged-in user from WebSocket scope
-        # AuthenticationMiddleware provides this
-        user = self.scope["user"]
+        if event_type == "chat":
+            print("Saving message...")
+            # Extract message text
+            message = data.get("message")
 
-        # Prevent unauthenticated users from sending messages
-        if not user.is_authenticated:
-            return
+            # Get logged-in user from WebSocket scope
+            # AuthenticationMiddleware provides this
+            user = self.scope["user"]
 
-        # Save message into database
-        saved_message = await self.save_message(
-            self.conversation_id,
-            user,
-            message
-        )
+            # Prevent unauthenticated users from sending messages
+            if not user.is_authenticated:
+                return
 
-        # Send message to everyone connected
-        # to this conversation group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
+            # Save message into database
+            saved_message = await self.save_message(
+                self.conversation_id,
+                user,
+                message
+            )
+            print("Broadcasting...")
+            # Send message to everyone connected
+            # to this conversation group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    # Channels uses this value to determine
+                    # which method should be called
+                    # "chat_message" -> chat_message()
+                    "type": "chat_message",
 
-                # Channels uses this value to determine
-                # which method should be called
-                # "chat_message" -> chat_message()
-                "type": "chat_message",
+                    # Message content
+                    "message": saved_message.content,
 
-                # Message content
-                "message": saved_message.content,
+                    # Sender's id
+                    "sender_id": saved_message.sender.id,
 
-                # Sender's id
-                "sender_id": saved_message.sender.id,
+                    # Sender's username
+                    "sender_username": saved_message.sender.username,
 
-                # Sender's username
-                "sender_username": saved_message.sender.username,
-            }
-        )
+                    "timestamp": saved_message.timestamp.strftime("%H:%M"),
+                }
+            )
+
+        elif event_type == "audio_call":
+
+            user = self.scope["user"]
+
+            await self.channel_layer.group_send(
+            
+                self.room_group_name,
+
+                {
+                
+                    "type": "incoming_audio_call",
+
+                    "caller": user.username,
+
+                    "caller_id": user.id,
+
+                }
+
+            )
+
+        elif event_type == "video_call":
+
+            user = self.scope["user"]
+
+            await self.channel_layer.group_send(
+            
+                self.room_group_name,
+
+                {
+                
+                    "type": "incoming_video_call",
+
+                    "caller": user.username,
+
+                    "caller_id": user.id,
+
+                }
+
+            )
 
     # Called automatically because
     # group_send() had "type": "chat_message"
     async def chat_message(self, event):
+        print("chat_message() called")
 
         # Send data back to browser through WebSocket
         await self.send(
             text_data=json.dumps({
+                "type": "chat",
 
                 # Message text
                 "message": event["message"],
@@ -106,8 +155,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                 # Sender username
                 "sender_username": event["sender_username"],
+
+                "timestamp": event.get("timestamp"),
             })
         )
+
+    async def incoming_audio_call(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "incoming_audio_call",
+            "caller": event["caller"],
+            "caller_id": event["caller_id"],
+        }))
+
+    async def incoming_video_call(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "incoming_video_call",
+            "caller": event["caller"],
+            "caller_id": event["caller_id"],
+        }))
 
     # Database operations are synchronous
     # This decorator allows them to be safely used inside async code

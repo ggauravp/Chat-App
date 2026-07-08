@@ -1,318 +1,51 @@
-<!DOCTYPE html>
-<html>
+{% load static %}
 <head>
-    <title>Chat</title>
-
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Inter, system-ui, sans-serif;
-            background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
-            color: #0f172a;
-        }
-
-        .chat-container {
-            max-width: 940px;
-            margin: 24px auto;
-            height: calc(100vh - 48px);
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-            border-radius: 32px;
-            box-shadow: 0 40px 120px rgba(15, 23, 42, 0.12);
-            overflow: hidden;
-        }
-
-        /* HEADER */
-        .chat-header {
-            background: #ffffff;
-            color: #0f172a;
-            padding: 22px 28px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .chat-header .title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .chat-header .subtitle {
-            margin: 4px 0 0;
-            color: #475569;
-            font-size: 0.95rem;
-        }
-
-        /* MESSAGES BOX */
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 26px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-        }
-
-        /* COMMON MESSAGE */
-        .msg {
-            max-width: 70%;
-            min-width: 120px;
-            padding: 16px 18px;
-            border-radius: 24px;
-            font-size: 0.96rem;
-            line-height: 1.55;
-            position: relative;
-            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.06);
-            word-break: break-word;
-        }
-
-        .msg .msg-meta {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            color: #475569;
-        }
-
-        .sent {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-            border-bottom-left-radius: 24px;
-        }
-
-        .received {
-            background: #ffffff;
-            align-self: flex-start;
-            border-bottom-left-radius: 6px;
-            border-bottom-right-radius: 24px;
-        }
-
-        .time {
-            font-size: 0.78rem;
-            color: #64748b;
-            margin-top: 10px;
-            text-align: right;
-        }
-
-        .input-box {
-            display: flex;
-            gap: 14px;
-            align-items: center;
-            padding: 18px 24px;
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        #messageInput {
-            flex: 1;
-            min-height: 52px;
-            padding: 16px 18px;
-            border: 1px solid #cbd5e1;
-            border-radius: 999px;
-            outline: none;
-            font-size: 0.95rem;
-            background: white;
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
-        }
-
-        button {
-            padding: 14px 22px;
-            border: none;
-            background: #2563eb;
-            color: white;
-            border-radius: 999px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s ease, background 0.2s ease;
-            box-shadow: 0 16px 30px rgba(37, 99, 235, 0.18);
-        }
-
-        button:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-        }
-
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 999px;
-        }
-
-        @media (max-width: 768px) {
-            .chat-container {
-                margin: 10px;
-                height: calc(100vh - 20px);
-            }
-
-            .chat-header {
-                padding: 18px 20px;
-            }
-
-            #messages {
-                padding: 18px;
-            }
-
-            .msg {
-                max-width: 85%;
-            }
-
-            .input-box {
-                padding: 16px 20px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
 </head>
-
-<body>
-
 <div class="chat-container">
 
     <div class="chat-header">
         <div>
             <div class="title">Echo Chat</div>
-            <div class ="subtitle">Logged in as {{ request.user.username  }}</div>
+            <div class="subtitle">Logged in as {{ request.user.username }}</div>
             <div class="subtitle">Conversation #{{ conversation_id }}</div>
-
         </div>
-        <div class="subtitle">Live chat with your friends</div>
+
+        <div class="subtitle">
+            Live chat with your friends
+        </div>
+
         <div class="call-buttons">
-
-            <button class="call-btn">📞</button>
-
-            <button class="call-btn">🎥</button>
-
-            </div>
+            <button class="call-btn" onclick="startAudioCall()">📞</button>
+            <button class="call-btn" onclick="startVideoCall()">🎥</button>
+        </div>
     </div>
 
     <div id="messages"></div>
 
     <div class="input-box">
-        <input type="text" id="messageInput" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+        <input
+            type="text"
+            id="messageInput"
+            placeholder="Type a message..."
+        >
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
     </div>
 
 </div>
 
-<script>
-    // Get conversation id passed from Django template
-    const conversationId = "{{ conversation_id }}";
+<div
+    id="chat-data"
+    data-conversation-id="{{ conversation_id }}"
+    data-user-id="{{ request.user.id }}"
+    data-username="{{ request.user.username }}"
+></div>
 
-    // Logged-in user's id
-    const userId = "{{ request.user.id }}";
-
-    // Logged-in user's username
-    const userName = "{{ request.user.username }}";
-
-    // Message container where all chat messages will be displayed
-    const messagesContainer = document.getElementById("messages");
-
-    // Create a WebSocket connection request to Django Channels.
-    // This request is matched against websocket_urlpatterns and routed to ChatConsumer.
-    const socket = new WebSocket(
-        "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
-    );
-
-    // Runs whenever a new message is received from the Consumer
-    socket.onmessage = function (event) {
-
-        // Convert JSON string received from backend into JS object
-        const data = JSON.parse(event.data);
-
-        // Add the received message to the chat UI
-        appendMessage(
-            data.sender_id,
-            data.sender_username,
-            data.message,
-            data.timestamp || getTime()
-        );
-    };
-
-    // Called when Send button is clicked
-    function sendMessage() {
-
-        // Get input field
-        const input = document.getElementById("messageInput");
-
-        // Prevent sending empty messages
-        if (!input.value.trim()) return;
-
-        // Send message through WebSocket to Django Consumer
-        socket.send(JSON.stringify({
-            message: input.value
-        }));
-
-        // Clear input field after sending
-        input.value = "";
-    }
-
-    // Runs when WebSocket connection closes
-    socket.onclose = () => console.log("WebSocket closed");
-
-    // Load old messages that Django sent while rendering page
-    const oldMessages = JSON.parse(`{{ messages_json|escapejs }}`);
-
-    // Display all previous messages in chat box
-    oldMessages.forEach(msg => {
-        appendMessage(
-            msg.sender_id,
-            msg.sender_username,
-            msg.message,
-            msg.timestamp
-        );
-    });
-
-    // Creates a message bubble and adds it to chat UI
-    function appendMessage(senderId, senderName, message, time) {
-
-        // Create new div element for message
-        const div = document.createElement("div");
-
-        // Check whether this message belongs to current user
-        const isMe = parseInt(senderId) === parseInt(userId);
-
-        // Add common message class
-        div.classList.add("msg");
-
-        // Add sent/received class based on sender
-        div.classList.add(isMe ? "sent" : "received");
-
-        // Create message bubble HTML
-        div.innerHTML = `
-            <div class="msg-meta"><span>${isMe ? "You" : senderName}</span><span>${time}</span></div>
-            <div>${message}</div>
-        `;
-
-        // Add message to chat container
-        messagesContainer.appendChild(div);
-
-        // Automatically scroll to latest message
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    // Generate current time for live messages
-    // Used as fallback if timestamp isn't sent from backend
-    function getTime() {
-        const now = new Date();
-
-        return now.getHours() + ":" +
-               String(now.getMinutes()).padStart(2, "0");
-    }
+<script id="messages-data" type="application/json">
+{{ messages_json|safe }}
 </script>
-</body>
-</html>
+
+<script src="{% static 'chat/js/chat.js' %}"></script>
