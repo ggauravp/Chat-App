@@ -186,9 +186,18 @@
     <div class="chat-header">
         <div>
             <div class="title">Echo Chat</div>
+            <div class ="subtitle">Logged in as {{ request.user.username  }}</div>
             <div class="subtitle">Conversation #{{ conversation_id }}</div>
+
         </div>
         <div class="subtitle">Live chat with your friends</div>
+        <div class="call-buttons">
+
+            <button class="call-btn">📞</button>
+
+            <button class="call-btn">🎥</button>
+
+            </div>
     </div>
 
     <div id="messages"></div>

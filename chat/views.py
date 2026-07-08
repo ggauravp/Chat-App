@@ -20,6 +20,7 @@ def chat_room(request, conversation_id):
     ])
 
     return render(request, "chat/chat.html", {
+        ""
         "conversation_id": conversation_id,
         "messages_json": messages_json,
     })
