@@ -110,3 +110,134 @@ socket.onmessage      socket.onmessage
 │                          │
 Hide UI               Hide UI
 ```
+
+
+# Working of WebRTC
+
+## Key Terms
+
+### 1. ICE (Interactive Connectivity Establishment)
+
+ICE is a framework built into the WebRTC engine that manages the process of establishing a connection between two peers.
+
+Its responsibilities are:
+
+- Collect all possible network addresses through which a device can be reached (called **ICE candidates**).
+- Exchange these ICE candidates with the remote peer using the **signaling server**.
+- Test different combinations of local and remote candidates to determine which connection works.
+- Select the best available connection, preferably a direct peer-to-peer connection with the lowest latency.
+
+### Types of ICE Candidates
+
+#### 1. Host Candidate
+
+The device's local network address.
+
+**Example:**
+
+```text
+192.168.1.15
+```
+
+- Generated from the local network interface.
+- Works only when both peers are on the same local network (LAN).
+
+---
+
+#### 2. Server Reflexive Candidate (srflx)
+
+A public network address discovered using a **STUN server**.
+
+**Example:**
+
+```text
+103.67.xx.xx
+```
+
+- Represents the public IP address and port assigned by the router (NAT).
+- Used for direct communication over the internet.
+
+---
+
+#### 3. Relay Candidate
+
+A candidate obtained from a **TURN server**.
+
+```text
+Peer A
+   │
+   ▼
+TURN Server
+   ▲
+   │
+Peer B
+```
+
+- Used when a direct peer-to-peer connection cannot be established.
+- Media traffic is relayed through the TURN server.
+
+---
+
+## 2. STUN Server (Session Traversal Utilities for NAT)
+
+A **STUN (Session Traversal Utilities for NAT)** server helps a device discover its **public IP address and port** as seen by the outside world.
+
+Its purpose is to:
+
+- Discover the public IP address.
+- Help browsers communicate directly through NAT.
+- Generate **Server Reflexive (srflx)** ICE candidates.
+
+> **Note:** STUN only helps discover the public address. It does **not** relay audio, video, or data.
+
+---
+
+## 3. TURN Server (Traversal Using Relays around NAT)
+
+A **TURN (Traversal Using Relays around NAT)** server is used when a direct peer-to-peer connection cannot be established due to:
+
+- Symmetric NAT
+- Strict firewalls
+- Enterprise networks
+- Other network restrictions
+
+Instead of connecting directly:
+
+```text
+Peer A ─────────► Peer B
+```
+
+The connection is established through the TURN server:
+
+```text
+Peer A
+   │
+   ▼
+TURN Server
+   ▲
+   │
+Peer B
+```
+
+The TURN server relays all media (audio, video, and data) between the peers.
+
+> **Note:** TURN is slower than a direct peer-to-peer connection because all traffic passes through the relay server.
+
+---
+
+## Relationship Between ICE, STUN, and TURN
+
+```text
+                ICE
+                 │
+      ┌──────────┴──────────┐
+      │                     │
+   Uses STUN            Uses TURN
+      │                     │
+Discovers Public IP     Relays Media
+```
+
+- **ICE** manages the entire connection establishment process.
+- **STUN** helps discover the device's public IP address.
+- **TURN** relays media when a direct connection is not possible.
+- ICE gathers **Host**, **Server Reflexive (STUN)**, and **Relay (TURN)** candidates, exchanges them between peers, tests connectivity, and selects the best available path.

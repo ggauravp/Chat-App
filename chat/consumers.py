@@ -167,6 +167,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+        elif event_type == "offer":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "webrtc_offer",
+                    "offer": data["offer"],
+                    "sender_id": self.scope["user"].id,
+                }
+            )
+
+        elif event_type == "answer":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "webrtc_answer",
+                    "answer": data["answer"],
+                    "sender_id": self.scope["user"].id,
+                }
+            )
+
     # Called automatically because
     # group_send() had "type": "chat_message"
     async def chat_message(self, event):
@@ -176,16 +196,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(
             text_data=json.dumps({
                 "type": "chat",
-
                 # Message text
                 "message": event["message"],
-
                 # Sender id
                 "sender_id": event["sender_id"],
-
                 # Sender username
                 "sender_username": event["sender_username"],
-
                 "timestamp": event.get("timestamp"),
             })
         )
@@ -204,6 +220,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "caller": event["caller"],
             "caller_id": event["caller_id"],
         }))
+
+    async def webrtc_offer(self, event):
+        await self.send(
+            text_data=json.dumps({
+                "type": "offer",
+                "offer": event["offer"],
+                "sender_id": event["sender_id"],
+            })
+        )
+
+    async def webrtc_answer(self, event):
+        await self.send(
+            text_data=json.dumps({
+                "type": "answer",
+                "answer": event["answer"],
+                "sender_id": event["sender_id"],
+            })
+        )
 
     # Database operations are synchronous
     # This decorator allows them to be safely used inside async code

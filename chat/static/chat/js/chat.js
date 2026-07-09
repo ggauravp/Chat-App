@@ -33,13 +33,25 @@ document.getElementById("remoteVideo");
 // Local media stream
 let localStream = null;
 
+// WebRTC connection object
+let peerConnection = null;
+
+// Public STUN server used to discover network addresses. 
+const configuration = {
+    iceServers: [
+        {
+            urls: "stun:stun.l.google.com:19302"
+        }
+    ]
+};
 // Create WebSocket connection
 const socket = new WebSocket(
     "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
 );
 
 // Handle incoming events
-socket.onmessage = function(event){
+socket.onmessage = async function(event){
+
     console.log("Received:", event.data);
     const data = JSON.parse(event.data);
     if(data.type === "chat"){
@@ -86,13 +98,44 @@ socket.onmessage = function(event){
     else if (data.type === "call_accepted") {
 
         console.log(data.username + " accepted the call.");
+        await createOffer(); // Create and send an SDP offer to the receiver
 
     }
+
+    else if(data.type === "offer"){
+
+        console.log("Offer received");    
+        // Tell WebRTC about the caller's offer
+        await peerConnection.setRemoteDescription(
+            new RTCSessionDescription(data.offer)
+        );
+
+        // Create an answer
+        const answer = await peerConnection.createAnswer();
+
+        // Save it as our local description
+        await peerConnection.setLocalDescription(answer);
+
+        // Send answer back to caller
+        socket.send(JSON.stringify({
+            type: "answer",
+            answer: answer
+        }));
+    }   
+
+    else if(data.type === "answer"){
+        console.log("Answer received");
+        await peerConnection.setRemoteDescription(
+
+            new RTCSessionDescription(data.answer)
+
+        );
+        console.log("Remote description set on caller");
+    }   
 
     else if (data.type === "call_declined") {
 
         console.log(data.username + " declined the call.");
-
         callModal.classList.add("hidden");
 
     }
@@ -145,6 +188,8 @@ async function startAudioCall(){
 async function startVideoCall(){
 
     await openLocalMedia(true); // Open local camera and microphone 
+    createPeerConnection(); // Create a new RTCPeerConnection for the video call
+    console.log("PeerConnection created at caller side");
     socket.send(JSON.stringify({
 
         type:"video_call"
@@ -159,6 +204,8 @@ acceptBtn.onclick = async function () {
     // Open receiver camera & microphone
     if (currentCallType === "video") {
         await openLocalMedia(true); // Open local camera and microphone
+        createPeerConnection(); // Create a new RTCPeerConnection for the video call
+        console.log("PeerConnection created at receiver side");
 
     } else if (currentCallType === "audio") {
         await openLocalMedia(false); // Open local microphone only, no video
@@ -270,6 +317,56 @@ async function openLocalMedia( video=true ){
 
 }
 
+function createPeerConnection(){
+    peerConnection = new RTCPeerConnection(configuration);
+    console.log("PeerConnection created:", peerConnection);
+
+    peerConnection.onicecandidate = function(event){
+
+        if(event.candidate){
+        
+            console.log("ICE Candidate found");
+        
+            socket.send(JSON.stringify({
+            
+                type: "ice_candidate",
+            
+                candidate: event.candidate
+            
+            }));
+        
+        }
+
+};
+    // Add every track from local stream to the peer connection
+    localStream.getTracks().forEach(track => {
+
+        peerConnection.addTrack(track, localStream);
+
+    });
+    console.log("Local tracks added to PeerConnection");
+}
+
+async function createOffer(){
+    // Generate an SDP Offer
+    const offer = await peerConnection.createOffer();
+
+    // Save it as our local description
+    await peerConnection.setLocalDescription(offer);
+
+    console.log("Offer created");
+    console.log(offer);
+
+    // Send offer through Django Channels
+    socket.send(JSON.stringify({
+
+        type: "offer",
+
+        offer: offer
+
+    }));
+
+}
 function endCall(){   
     console.log("Ending call...");
     if(socket.readyState === WebSocket.OPEN){
