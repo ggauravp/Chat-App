@@ -3,7 +3,7 @@ const chatData = document.getElementById("chat-data");
 const conversationId = chatData.dataset.conversationId;
 const userId = chatData.dataset.userId;
 const userName = chatData.dataset.username;
-
+let currentCallType = null;
 const callModal=document.getElementById("callModal");
 
 const callTitle=document.getElementById("callTitle");
@@ -14,7 +14,6 @@ const acceptBtn=document.getElementById("acceptBtn");
 
 const declineBtn=document.getElementById("declineBtn");
 
-const cancelBtn=document.getElementById("cancelBtn");
 
 // Message container
 const messagesContainer = document.getElementById("messages");
@@ -53,6 +52,7 @@ socket.onmessage = function(event){
     }
 
     else if(data.type === "incoming_audio_call"){
+       currentCallType = "audio";
        if(parseInt(data.caller_id)!==parseInt(userId)){
 
             callTitle.innerText="Incoming Audio Call";
@@ -63,13 +63,12 @@ socket.onmessage = function(event){
 
             declineBtn.classList.remove("hidden");
 
-            cancelBtn.classList.add("hidden");
-
             callModal.classList.remove("hidden");
 
         }              
     }
     else if(data.type === "incoming_video_call"){
+        currentCallType = "video";
         if(parseInt(data.caller_id)!==parseInt(userId)){
         
             callTitle.innerText="Incoming Video Call";
@@ -79,8 +78,6 @@ socket.onmessage = function(event){
             acceptBtn.classList.remove("hidden");
         
             declineBtn.classList.remove("hidden");
-        
-            cancelBtn.classList.add("hidden");
         
             callModal.classList.remove("hidden");
         
@@ -133,20 +130,9 @@ function sendMessage(){
 }
 
 // Audio call
-function startAudioCall(){
+async function startAudioCall(){
 
-    callTitle.innerText="Calling...";
-
-    callText.innerText="Calling user...";
-
-    acceptBtn.classList.add("hidden");
-
-    declineBtn.classList.add("hidden");
-
-    cancelBtn.classList.remove("hidden");
-
-    callModal.classList.remove("hidden");
-
+    await openLocalMedia(false); // Open local microphone only, no video
     socket.send(JSON.stringify({
 
         type:"audio_call"
@@ -158,8 +144,7 @@ function startAudioCall(){
 // Video call
 async function startVideoCall(){
 
-    await openLocalMedia();
-
+    await openLocalMedia(true); // Open local camera and microphone 
     socket.send(JSON.stringify({
 
         type:"video_call"
@@ -168,28 +153,32 @@ async function startVideoCall(){
 
 }
 
-acceptBtn.onclick = function () {
+acceptBtn.onclick = async function () {
+    console.log("Call accepted by user");
 
+    // Open receiver camera & microphone
+    if (currentCallType === "video") {
+        await openLocalMedia(true); // Open local camera and microphone
+
+    } else if (currentCallType === "audio") {
+        await openLocalMedia(false); // Open local microphone only, no video
+    }
+    
+    console.log("Local media stream opened");
+
+    // Hide incoming call popup
+    callModal.classList.add("hidden");
+
+    // Notify caller
     socket.send(JSON.stringify({
         type: "call_accepted"
     }));
-
-    callModal.classList.add("hidden");
 
 };
 declineBtn.onclick = function () {
 
     socket.send(JSON.stringify({
         type: "call_declined"
-    }));
-
-    callModal.classList.add("hidden");
-
-};
-cancelBtn.onclick = function () {
-
-    socket.send(JSON.stringify({
-        type: "call_cancelled"
     }));
 
     callModal.classList.add("hidden");
@@ -203,16 +192,12 @@ const oldMessages = JSON.parse(
     document.getElementById("messages-data").textContent
 );
 oldMessages.forEach(msg=>{
-
     appendMessage(
-
         msg.sender_id,
         msg.sender_username,
         msg.message,
         msg.timestamp
-
     );
-
 });
 
 // Add message bubble
@@ -250,14 +235,14 @@ function getTime(){
 
 }
 
-async function openLocalMedia(){
+async function openLocalMedia( video=true ){
 
     try{
         // Request access to camera and microphone and add video and audio tracks to the local stream
         localStream =
         await navigator.mediaDevices.getUserMedia({ 
 
-            video:true,
+            video:video,
 
             audio:true
 
@@ -267,11 +252,17 @@ async function openLocalMedia(){
 
         callScreen.classList.remove("hidden"); // makes the call screen visible
 
+        if(video){
+            localVideo.style.display = "block"; // shows the local video element if video is enabled
+        } else {
+            localVideo.style.display = "none"; // hides the local video element if video is disabled
+        }
+
     }
 
     catch(err){
 
-        alert("Unable to access camera.");
+        alert("Unable to access camera or microphone. Please check your device settings and permissions.");
 
         console.error(err);
 
@@ -279,28 +270,21 @@ async function openLocalMedia(){
 
 }
 
-function endCall(){
-    
+function endCall(){   
     console.log("Ending call...");
-
     if(socket.readyState === WebSocket.OPEN){
         console.log("Sending call_cancelled");
         socket.send(JSON.stringify({
             type: "call_cancelled"
         }));
     }
-
     if(localStream){
         localStream
         .getTracks()
         .forEach(track=>track.stop());
         localStream = null;
     }
-
     localVideo.srcObject=null;
-
     remoteVideo.srcObject=null;
-
     callScreen.classList.add("hidden");
-
 }

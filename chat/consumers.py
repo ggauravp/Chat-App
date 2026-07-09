@@ -114,6 +114,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         elif event_type == "video_call":
+            print("Video call request received")
 
             user = self.scope["user"]
 
@@ -197,6 +198,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def incoming_video_call(self, event):
+        print("incoming_video_call() called")
         await self.send(text_data=json.dumps({
             "type": "incoming_video_call",
             "caller": event["caller"],
