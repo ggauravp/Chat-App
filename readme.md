@@ -78,3 +78,35 @@ How it works
 Django checks both values.
 * If they match → request is allowed
 * If not → request is blocked (403 error)
+
+### The Complete Flow of how the call model in both users are hidden after user end call
+```
+User A clicks End Call
+        │
+        ▼
+endCall()
+        │
+socket.send({
+    type:"call_cancelled"
+})
+        │
+        ▼
+ChatConsumer.receive()
+        │
+group_send(chat_30)
+        │
+        ▼
+────────────────────────────
+│                          │
+▼                          ▼
+Consumer A            Consumer B
+call_cancelled()      call_cancelled()
+│                          │
+send()                     send()
+│                          │
+▼                          ▼
+Browser A             Browser B
+socket.onmessage      socket.onmessage
+│                          │
+Hide UI               Hide UI
+```

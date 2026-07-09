@@ -105,14 +105,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
                 self.room_group_name,
 
-                {
-                
+                {              
                     "type": "incoming_audio_call",
-
                     "caller": user.username,
-
                     "caller_id": user.id,
-
                 }
 
             )
@@ -125,14 +121,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
                 self.room_group_name,
 
-                {
-                
+                {               
                     "type": "incoming_video_call",
-
                     "caller": user.username,
-
                     "caller_id": user.id,
-
                 }
 
             )
@@ -162,6 +154,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         elif event_type == "call_cancelled":
+            print("Call cancelled event received")
         
             user = self.scope["user"]
 
@@ -233,18 +226,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "type": "call_accepted",
             "username": event["username"],
         }))
-    
-    
+
     async def call_declined(self, event):
-    
+
         await self.send(text_data=json.dumps({
             "type": "call_declined",
             "username": event["username"],
         }))
-    
-    
+
     async def call_cancelled(self, event):
-    
+
         await self.send(text_data=json.dumps({
             "type": "call_cancelled",
             "username": event["username"],

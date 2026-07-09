@@ -20,6 +20,33 @@
             <button class="call-btn" onclick="startVideoCall()">🎥</button>
         </div>
     </div>
+<!-- Call Screen. This is where the call interface will be displayed . it is hidden when page first loads and shown when a call is intiated-->
+    <div id="callScreen" class="call-screen hidden">
+
+        <!-- Local camera -->
+        <video
+            id="localVideo"
+            autoplay
+            playsinline
+            muted>
+        </video>
+
+        <!-- Remote user's camera -->
+        <video
+            id="remoteVideo"
+            autoplay
+            playsinline>
+        </video>
+
+        <div class="call-controls">
+
+            <button onclick="endCall()">
+                End Call
+            </button>
+
+        </div>
+
+    </div>
 
     <div id="messages"></div>
 

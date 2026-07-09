@@ -19,6 +19,21 @@ const cancelBtn=document.getElementById("cancelBtn");
 // Message container
 const messagesContainer = document.getElementById("messages");
 
+// Call screen
+const callScreen =
+document.getElementById("callScreen");
+
+// Local camera
+const localVideo =
+document.getElementById("localVideo");
+
+// Remote camera
+const remoteVideo =
+document.getElementById("remoteVideo");
+
+// Local media stream
+let localStream = null;
+
 // Create WebSocket connection
 const socket = new WebSocket(
     "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
@@ -87,10 +102,16 @@ socket.onmessage = function(event){
 
     else if (data.type === "call_cancelled") {
 
-        console.log(data.username + " cancelled the call.");
-
         callModal.classList.add("hidden");
+        callScreen.classList.add("hidden");
 
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+
+        localVideo.srcObject = null;
+        remoteVideo.srcObject = null;
     }
 };
 
@@ -135,19 +156,9 @@ function startAudioCall(){
 }
 
 // Video call
-function startVideoCall(){
+async function startVideoCall(){
 
-    callTitle.innerText="Video Calling...";
-
-    callText.innerText="Connecting...";
-
-    acceptBtn.classList.add("hidden");
-
-    declineBtn.classList.add("hidden");
-
-    cancelBtn.classList.remove("hidden");
-
-    callModal.classList.remove("hidden");
+    await openLocalMedia();
 
     socket.send(JSON.stringify({
 
@@ -236,5 +247,60 @@ function getTime(){
 
     return now.getHours()+":"+
     String(now.getMinutes()).padStart(2,"0");
+
+}
+
+async function openLocalMedia(){
+
+    try{
+        // Request access to camera and microphone and add video and audio tracks to the local stream
+        localStream =
+        await navigator.mediaDevices.getUserMedia({ 
+
+            video:true,
+
+            audio:true
+
+        });
+
+        localVideo.srcObject = localStream; // adds the local stream to the local video element
+
+        callScreen.classList.remove("hidden"); // makes the call screen visible
+
+    }
+
+    catch(err){
+
+        alert("Unable to access camera.");
+
+        console.error(err);
+
+    }
+
+}
+
+function endCall(){
+    
+    console.log("Ending call...");
+
+    if(socket.readyState === WebSocket.OPEN){
+        console.log("Sending call_cancelled");
+        socket.send(JSON.stringify({
+            type: "call_cancelled"
+        }));
+    }
+
+    if(localStream){
+        localStream
+        .getTracks()
+        .forEach(track=>track.stop());
+        localStream = null;
+    }
+
+    localVideo.srcObject=null;
+
+    remoteVideo.srcObject=null;
+
+    callScreen.classList.add("hidden");
 
 }
