@@ -1,3 +1,6 @@
+## Video Call
+
+![Video call](images/echochat.png)
 # Chat App
 - This is a real-time chat system using Django + WebSockets.
 

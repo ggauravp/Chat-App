@@ -14,6 +14,7 @@ const acceptBtn=document.getElementById("acceptBtn");
 
 const declineBtn=document.getElementById("declineBtn");
 
+let isCaller = false;
 
 // Message container
 const messagesContainer = document.getElementById("messages");
@@ -82,6 +83,15 @@ socket.onmessage = async function(event){
         }              
     }
     else if(data.type === "incoming_video_call"){
+
+        if (parseInt(data.caller_id) === parseInt(userId)) {
+            return; // Ignore my own call notification
+        }
+
+        console.log("incoming_video_call BEFORE =", isCaller);
+        isCaller = false;
+        console.log("incoming_video_call AFTER =", isCaller);
+
         currentCallType = "video";
         if(parseInt(data.caller_id)!==parseInt(userId)){
         
@@ -98,13 +108,28 @@ socket.onmessage = async function(event){
         }
     }
     else if (data.type === "call_accepted") {
-
+        if (!isCaller) {
+            console.log("Call accepted by receiver, Receiver must NOT create an offer.");
+            return;
+        }
+        console.log("call_accepted, isCaller =", isCaller);
+        if(data.username == userName) {
+            console.log("Call accepted by self, ignoring.");
+            return;
+        }
         console.log(data.username + " accepted the call.");
         await createOffer(); // Create and send an SDP offer to the receiver
 
     }
 
     else if(data.type === "offer"){
+
+        console.log("Offer sender:", data.sender_id);
+        console.log("Current user:", userId);
+
+        // Ignore our own offer
+        if(parseInt(data.sender_id) === parseInt(userId))
+            return;
 
         console.log("Offer received");    
         // Tell WebRTC about the caller's offer
@@ -126,6 +151,10 @@ socket.onmessage = async function(event){
     }   
 
     else if(data.type === "answer"){
+        //Ignore our own answer
+        if(parseInt(data.sender_id) === parseInt(userId))
+            return;
+
         console.log("Answer received");
         await peerConnection.setRemoteDescription(
 
@@ -199,6 +228,9 @@ async function startAudioCall(){
 
 // Video call
 async function startVideoCall(){
+
+    isCaller = true; // Set the caller flag to true
+    console.log("startVideoCall -> isCaller =", isCaller);
 
     await openLocalMedia(true); // Open local camera and microphone 
 

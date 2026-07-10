@@ -230,6 +230,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "caller": event["caller"],
             "caller_id": event["caller_id"],
         }))
+    
+    async def call_accepted(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "call_accepted",
+            "username": event["username"],
+        }))
+
+    async def call_declined(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "call_declined",
+            "username": event["username"],
+        }))
+
+    async def call_cancelled(self, event):
+
+        await self.send(text_data=json.dumps({
+            "type": "call_cancelled",
+            "username": event["username"],
+        }))
 
     async def webrtc_offer(self, event):
         await self.send(
@@ -275,24 +296,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
             content=content
         )
 
-    async def call_accepted(self, event):
-
-        await self.send(text_data=json.dumps({
-            "type": "call_accepted",
-            "username": event["username"],
-        }))
-
-    async def call_declined(self, event):
-
-        await self.send(text_data=json.dumps({
-            "type": "call_declined",
-            "username": event["username"],
-        }))
-
-    async def call_cancelled(self, event):
-
-        await self.send(text_data=json.dumps({
-            "type": "call_cancelled",
-            "username": event["username"],
-        }))
 
