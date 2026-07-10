@@ -187,6 +187,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 }
             )
 
+        elif event_type == "ice_candidate":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "webrtc_ice_candidate",
+                    "candidate": data["candidate"],
+                    "sender_id": self.scope["user"].id,
+                }
+            )
+
     # Called automatically because
     # group_send() had "type": "chat_message"
     async def chat_message(self, event):
@@ -235,6 +245,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data=json.dumps({
                 "type": "answer",
                 "answer": event["answer"],
+                "sender_id": event["sender_id"],
+            })
+        )
+
+    async def webrtc_ice_candidate(self, event):
+        await self.send(
+            text_data=json.dumps({
+                "type": "ice_candidate",
+                "candidate": event["candidate"],
                 "sender_id": event["sender_id"],
             })
         )

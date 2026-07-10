@@ -45,8 +45,10 @@ const configuration = {
     ]
 };
 // Create WebSocket connection
+const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+
 const socket = new WebSocket(
-    "ws://" + window.location.host + "/ws/chat/" + conversationId + "/"
+    wsProtocol + window.location.host + "/ws/chat/" + conversationId + "/"
 );
 
 // Handle incoming events
@@ -133,6 +135,17 @@ socket.onmessage = async function(event){
         console.log("Remote description set on caller");
     }   
 
+    else if(data.type === "ice_candidate"){
+        // Ignore our own candidate
+        if(parseInt(data.sender_id) === parseInt(userId))
+            return;
+
+        console.log("ICE Candidate received");
+        await peerConnection.addIceCandidate(   // Add the received ICE candidate to the peer connection
+            new RTCIceCandidate(data.candidate)
+        );
+    }   
+
     else if (data.type === "call_declined") {
 
         console.log(data.username + " declined the call.");
@@ -188,6 +201,12 @@ async function startAudioCall(){
 async function startVideoCall(){
 
     await openLocalMedia(true); // Open local camera and microphone 
+
+    if(!localStream) {
+        console.error("Local media stream is not available. Cannot start video call.");
+        return;
+    }
+    
     createPeerConnection(); // Create a new RTCPeerConnection for the video call
     console.log("PeerConnection created at caller side");
     socket.send(JSON.stringify({
@@ -222,6 +241,7 @@ acceptBtn.onclick = async function () {
     }));
 
 };
+
 declineBtn.onclick = function () {
 
     socket.send(JSON.stringify({
@@ -267,7 +287,6 @@ function appendMessage(senderId,senderName,message,time){
     `;
 
     messagesContainer.appendChild(div);
-
     messagesContainer.scrollTop=messagesContainer.scrollHeight;
 
 }
@@ -283,7 +302,6 @@ function getTime(){
 }
 
 async function openLocalMedia( video=true ){
-
     try{
         // Request access to camera and microphone and add video and audio tracks to the local stream
         localStream =
@@ -294,7 +312,6 @@ async function openLocalMedia( video=true ){
             audio:true
 
         });
-
         localVideo.srcObject = localStream; // adds the local stream to the local video element
 
         callScreen.classList.remove("hidden"); // makes the call screen visible
@@ -306,45 +323,47 @@ async function openLocalMedia( video=true ){
         }
 
     }
-
     catch(err){
-
         alert("Unable to access camera or microphone. Please check your device settings and permissions.");
-
         console.error(err);
-
     }
-
 }
 
 function createPeerConnection(){
+
     peerConnection = new RTCPeerConnection(configuration);
-    console.log("PeerConnection created:", peerConnection);
+
+    console.log("PeerConnection created");
+
+    localStream.getTracks().forEach(track=>{
+        peerConnection.addTrack(track, localStream);
+    });
 
     peerConnection.onicecandidate = function(event){
 
         if(event.candidate){
-        
+
             console.log("ICE Candidate found");
-        
+
             socket.send(JSON.stringify({
-            
-                type: "ice_candidate",
-            
-                candidate: event.candidate
-            
+
+                type:"ice_candidate",
+                candidate:event.candidate
+
             }));
-        
+
         }
 
-};
-    // Add every track from local stream to the peer connection
-    localStream.getTracks().forEach(track => {
+    };
 
-        peerConnection.addTrack(track, localStream);
+    peerConnection.ontrack = function(event){
 
-    });
-    console.log("Local tracks added to PeerConnection");
+        console.log("Remote stream received");
+
+        remoteVideo.srcObject = event.streams[0];
+
+    };
+
 }
 
 async function createOffer(){

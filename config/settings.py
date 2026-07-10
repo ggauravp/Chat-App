@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-%$&b@q#e%a$$8r)j!jq7ay4okxnv&b!lo9)52wd^ie=y_p$016
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 LOGIN_URL = "/accounts/login/"
 # Application definition
@@ -33,6 +33,7 @@ LOGIN_URL = "/accounts/login/"
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "https://*.ngrok-free.app",
 ]
 INSTALLED_APPS = [
     "daphne",  # important for Channels server

@@ -241,3 +241,215 @@ Discovers Public IP     Relays Media
 - **STUN** helps discover the device's public IP address.
 - **TURN** relays media when a direct connection is not possible.
 - ICE gathers **Host**, **Server Reflexive (STUN)**, and **Relay (TURN)** candidates, exchanges them between peers, tests connectivity, and selects the best available path.
+
+## Full Flow or How users are connected for call
+```CALLER                                               RECEIVER
+======                                               ========
+
+Click Video Call
+      │
+      ▼
+startVideoCall()
+      │
+      ▼
+openLocalMedia()
+(Camera + Mic Permission)
+      │
+      ▼
+create localStream
+      │
+      ▼
+localVideo.srcObject = localStream
+      │
+      ▼
+video_call ------------------------------► Django Consumer
+                                               │
+                                               ▼
+                               group_send(incoming_video_call)
+                                               │
+                                               ▼
+                           incoming_video_call ----------------►
+
+                                            Incoming Call Popup
+                                            (Accept / Decline)
+
+                                            Click Accept
+                                                  │
+                                                  ▼
+                                           openLocalMedia()
+                                         (Camera + Mic opens)
+                                                  │
+                                                  ▼
+                                        createPeerConnection()
+                                                  │
+                                                  ▼
+                                    Add local audio/video tracks
+                                                  │
+                                                  ▼
+                                  call_accepted ----------------► Django Consumer
+                                                                    │
+                                                                    ▼
+                                                          group_send(call_accepted)
+                                                                    │
+                                                                    ▼
+                                 ◄---------------- call_accepted
+
+Caller receives call_accepted
+        │
+        ▼
+createPeerConnection()
+        │
+        ▼
+Add local audio/video tracks
+        │
+        ▼
+createOffer()
+        │
+        ▼
+Offer SDP created
+        │
+        ▼
+setLocalDescription(offer)
+        │
+        ▼
+offer ------------------------------► Django Consumer
+                                           │
+                                           ▼
+                                  group_send(offer)
+                                           │
+                                           ▼
+                          ◄---------------- offer
+
+Receiver receives Offer
+        │
+        ▼
+setRemoteDescription(offer)
+        │
+        ▼
+createAnswer()
+        │
+        ▼
+Answer SDP created
+        │
+        ▼
+setLocalDescription(answer)
+        │
+        ▼
+answer ----------------------------► Django Consumer
+                                          │
+                                          ▼
+                                 group_send(answer)
+                                          │
+                                          ▼
+                        ◄---------------- answer
+
+Caller receives Answer
+        │
+        ▼
+setRemoteDescription(answer)
+
+──────────────────────────────────────────────────────────────
+
+ICE NEGOTIATION STARTS
+
+Caller Browser
+      │
+      ▼
+Find ICE Candidate #1
+      │
+      ▼
+ice_candidate ----------------------► Django Consumer
+                                          │
+                                          ▼
+                                 group_send(candidate)
+                                          │
+                                          ▼
+                        ◄---------------- Receiver
+
+Receiver
+      │
+      ▼
+addIceCandidate()
+
+──────────────────────────────────────────────
+
+Receiver Browser
+      │
+      ▼
+Find ICE Candidate #1
+      │
+      ▼
+ice_candidate ----------------------► Django Consumer
+                                          │
+                                          ▼
+                                 group_send(candidate)
+                                          │
+                                          ▼
+                        ◄---------------- Caller
+
+Caller
+      │
+      ▼
+addIceCandidate()
+
+──────────────────────────────────────────────
+
+More ICE candidates...
+Caller  ─────────────► Receiver
+Receiver ────────────► Caller
+(repeated automatically)
+
+──────────────────────────────────────────────
+
+ICE Connectivity Checks
+
+Caller ◄──────────────► Receiver
+
+Try Candidate A
+      │
+      ▼
+Fail
+
+Try Candidate B
+      │
+      ▼
+Success
+
+ICE Connection State = connected
+
+──────────────────────────────────────────────
+
+Peer-to-Peer connection established
+
+Caller ◄══════════════════════════════════════► Receiver
+         (Direct WebRTC Connection)
+
+No more media passes through Django.
+
+──────────────────────────────────────────────
+
+Remote media starts arriving
+
+Caller
+      │
+      ▼
+ontrack()
+      │
+      ▼
+remoteVideo.srcObject = receiver stream
+
+Receiver
+      │
+      ▼
+ontrack()
+      │
+      ▼
+remoteVideo.srcObject = caller stream
+
+──────────────────────────────────────────────
+
+🎥 Video flowing directly Browser ⇄ Browser
+🎤 Audio flowing directly Browser ⇄ Browser
+
+Django's role is now finished.
+```
