@@ -1,12 +1,14 @@
 import os
-from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-import chat.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings") # Tells Django where to find the settings module for this project. This is necessary for Django to work properly.
 
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+
 django_asgi_app = get_asgi_application()# This creates an ASGI application that can handle HTTP requests using Django's standard request handling. It allows the application to serve regular web pages and APIs.
+
+import chat.routing
 
 application = ProtocolTypeRouter({      # This is the main ASGI application that routes incoming connections based on their protocol type (HTTP or WebSocket).
     "http": django_asgi_app,            # Routes HTTP requests to the Django ASGI application created above.
