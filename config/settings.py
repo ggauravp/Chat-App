@@ -81,14 +81,13 @@ TEMPLATES = [
     },
 ]
 
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer", # This specifies that we want to use Redis as the backing store for our channel layer, which is necessary for handling WebSocket connections in a scalable way.
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [os.environ.get("REDIS_URL", "redis://127.0.0.1:6379")],
         },
-        "capacity": 1500,
-        "expiry": 10,
     },
 }
 
